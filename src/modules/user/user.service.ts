@@ -1,8 +1,9 @@
 import { Injectable, BadRequestException, UseGuards } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { User } from './modules/user.model';
+import { User } from './models/user.model';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDTO, UpdateUserDTO } from './dto'
+import { Watchlist } from '../watchlist/models/watchlist.model';
 
 
 
@@ -37,7 +38,11 @@ export class UserService {
     async publicUser(email: string) {
         return this, this.userRepository.findOne({
             where: { email: email },
-            attributes: { exclude: ['password'] }
+            attributes: { exclude: ['password'] },
+            include: {
+                model: Watchlist,
+                required: false
+            }
         })
     }
 
@@ -50,7 +55,7 @@ export class UserService {
 
     }
 
-    async deleteUser(email: string) {
+    async deleteUser(email: string): Promise<boolean> {
         await this.userRepository.destroy({ where: { email } })
         return true
     }
